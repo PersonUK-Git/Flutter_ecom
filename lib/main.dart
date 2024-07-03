@@ -1,3 +1,4 @@
+import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/onboarding.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Onboarding(),
+      home: Bottomnav(),
     );
   }
 }
