@@ -1,8 +1,12 @@
 import 'package:ecom/pages/animated_text.dart';
+import 'package:ecom/pages/bottomnav.dart';
+import 'package:ecom/pages/home.dart';
 import 'package:ecom/pages/login.dart';
+import 'package:ecom/services/database.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:random_string/random_string.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -29,6 +33,15 @@ class _SignUpState extends State<SignUp> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(backgroundColor: Colors.redAccent, content: Text("Registerd Successfully", style: TextStyle(fontSize: 20),), ),
         );
+        String Id = randomAlphaNumeric(10);
+        Map<String, dynamic> userInfoMap = {
+          "Name" : nameController.text,
+          "Email" : emailController.text,
+          "Id" : Id,
+        };
+
+        await DatabaseMethods().addUserDetails(userInfoMap, Id);
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>Bottomnav()));
       } on FirebaseException catch (e) {
         if(e.code =='weak-password'){
           ScaffoldMessenger.of(context).showSnackBar(
