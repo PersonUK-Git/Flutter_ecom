@@ -3,6 +3,7 @@ import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/home.dart';
 import 'package:ecom/pages/login.dart';
 import 'package:ecom/services/database.dart';
+import 'package:ecom/services/shared_pref.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -34,10 +35,17 @@ class _SignUpState extends State<SignUp> {
           SnackBar(backgroundColor: Colors.redAccent, content: Text("Registerd Successfully", style: TextStyle(fontSize: 20),), ),
         );
         String Id = randomAlphaNumeric(10);
+
+        await SharedPreferenceHelper().saveUserEmail(emailController.text);
+        await SharedPreferenceHelper().saveUserId(Id);
+        await SharedPreferenceHelper().saveUserName(nameController.text);
+        await SharedPreferenceHelper().saveUserImage("Testimage");
+
         Map<String, dynamic> userInfoMap = {
           "Name" : nameController.text,
           "Email" : emailController.text,
           "Id" : Id,
+          "Image" : "Testimage",
         };
 
         await DatabaseMethods().addUserDetails(userInfoMap, Id);
