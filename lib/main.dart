@@ -1,3 +1,4 @@
+import 'package:ecom/Admin/add_product.dart';
 import 'package:ecom/Admin/admin_login.dart';
 import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/login.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AdminLogin(),
+      home: AddProduct(),
     );
   }
 }
