@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class DatabaseMethods{
   Future addUserDetails(Map<String, dynamic> userInfoMap, String id) async{
@@ -8,4 +9,9 @@ class DatabaseMethods{
   Future addProduct(Map<String, dynamic> userInfoMap, String categoryName) async{
     return await FirebaseFirestore.instance.collection(categoryName).add(userInfoMap);
   }
+
+  Future<Stream<QuerySnapshot>> getProducts(String category) async{
+    return await FirebaseFirestore.instance.collection(category).snapshots();
+    
+  } 
 }

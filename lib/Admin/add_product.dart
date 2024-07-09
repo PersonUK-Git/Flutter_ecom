@@ -4,11 +4,10 @@ import 'dart:io';
 import 'package:ecom/services/database.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:random_string/random_string.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class AddProduct extends StatefulWidget {
   const AddProduct({super.key});
@@ -21,6 +20,8 @@ class _AddProductState extends State<AddProduct> {
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
   TextEditingController nameController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController detailController = TextEditingController();
 
   Future<void> getImage() async {
     try {
@@ -56,6 +57,20 @@ class _AddProductState extends State<AddProduct> {
   Future<void> uploadItem() async {
     try {
       if (selectedImage != null && nameController.text.isNotEmpty) {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return Center(
+              child: LoadingAnimationWidget.threeArchedCircle(
+                color: Colors.blue,
+                size: 200,
+              ),
+            );
+          },
+        );
+
         String addId = randomAlphaNumeric(10);
         Reference firebaseStorageRef = FirebaseStorage.instance
             .ref()
@@ -67,14 +82,19 @@ class _AddProductState extends State<AddProduct> {
         Map<String, dynamic> addProduct = {
           "Name": nameController.text,
           "Image": downloadURL,
+          "Price": priceController.text,
+          "Description": detailController.text
         };
 
         await DatabaseMethods().addProduct(addProduct, value!).then((value) {
           setState(() {
             selectedImage = null;
+            priceController.text = "";
+            detailController.text = "";
             nameController.text = "";
-            value = null;
+            this.value = null;
           });
+          Navigator.pop(context); // Hide loading indicator
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: Colors.green,
@@ -97,6 +117,7 @@ class _AddProductState extends State<AddProduct> {
         );
       }
     } catch (e) {
+      Navigator.pop(context); // Hide loading indicator if there's an error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.redAccent,
@@ -111,7 +132,7 @@ class _AddProductState extends State<AddProduct> {
 
   String? value;
   final List<String> categoryItems = [
-    'Watch', 'Laptop', 'TV', 'Headphones',
+    'Watch', 'Laptop', 'TV', 'Headphones', 'test',
   ];
 
   @override
@@ -203,6 +224,47 @@ class _AddProductState extends State<AddProduct> {
                     hintText: "Enter Product Name",
                   ),
                   controller: nameController,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "Product Rate",
+                style: AppStyle.lightTextFieldStyle(),
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Color(0xFFececf8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Enter Product Rate",
+                  ),
+                  controller: priceController,
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                "Product Detail",
+                style: AppStyle.lightTextFieldStyle(),
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Color(0xFFececf8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  maxLines: 6,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Enter Product Detail",
+                  ),
+                  controller: detailController,
                 ),
               ),
               const SizedBox(height: 20),
