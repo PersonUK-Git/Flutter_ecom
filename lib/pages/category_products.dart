@@ -35,7 +35,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
       builder: (context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData || isLoading) {
           return Center(
-            child: LoadingAnimationWidget.hexagonDots(
+            child: LoadingAnimationWidget.stretchedDots(
               color: Colors.blue,
               size: 200,
             ),
