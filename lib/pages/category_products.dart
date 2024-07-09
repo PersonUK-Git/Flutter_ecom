@@ -71,6 +71,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
                         if (progress == null) return child;
                         return Center(
                           child: CircularProgressIndicator(
+                            color: Colors.blue,
                             value: progress.expectedTotalBytes != null
                                 ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes ?? 1)
                                 : null,
