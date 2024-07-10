@@ -1,6 +1,7 @@
-import 'package:ecom/pages/animated_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/sign_up.dart';
+import 'package:ecom/services/shared_pref.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -25,20 +26,43 @@ class _LoginState extends State<Login> {
           password: passwordController.text,
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            content: Text(
-              "Logged in Successfully",
-              style: TextStyle(fontSize: 20),
+        // Fetch user details from Firestore using the email address
+        QuerySnapshot userQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('Email', isEqualTo: emailController.text)
+            .get();
+
+        if (userQuery.docs.isNotEmpty) {
+          DocumentSnapshot userDoc = userQuery.docs.first;
+
+          // Save user details in SharedPreferences
+          await SharedPreferenceHelper().saveUserId(userDoc.get('Id'));
+          await SharedPreferenceHelper().saveUserName(userDoc.get('Name'));
+          await SharedPreferenceHelper().saveUserEmail(userDoc.get('Email'));
+          await SharedPreferenceHelper().saveUserImage(userDoc.get('Image'));
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green,
+              content: Text(
+                "Logged in Successfully",
+                style: TextStyle(fontSize: 20),
+              ),
             ),
-          ),
-        );
+          );
 
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Bottomnav()));
-
-        // Navigate to the home page or any other page
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Bottomnav()));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.redAccent,
+              content: Text(
+                "User data not found",
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +119,6 @@ class _LoginState extends State<Login> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Placeholder Icon
                   Center(
                     child: Icon(
                       Icons.person,
@@ -105,8 +128,8 @@ class _LoginState extends State<Login> {
                   ),
                   const SizedBox(height: 20.0),
                   Center(
-                    child: AnimatedText(
-                      text: "Sign In",
+                    child: Text(
+                      "Sign In",
                       style: TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
