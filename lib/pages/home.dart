@@ -1,4 +1,5 @@
 import 'package:ecom/pages/category_products.dart';
+import 'package:ecom/services/shared_pref.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,30 @@ class _HomeState extends State<Home> {
     'Watch', 'Laptop', 'TV', 'Headphones', 'test',
   ];
 
+  String? name, image;
+
+  getTheSharedPref() async{
+    name = await SharedPreferenceHelper().getUserName();
+    image = await SharedPreferenceHelper().getUserImage();
+    setState(() {
+      
+    });
+  }
+
+  onTheLoad() async{
+   await getTheSharedPref();
+   setState(() {
+     
+   });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    onTheLoad();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +64,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hey, Prateek",
+                        "Hey, "+ name!,
                         style: AppStyle.boldTextFieldStyle(),
                       ),
                       Text(
@@ -50,8 +75,8 @@ class _HomeState extends State<Home> {
                   ),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(30),
-                    child: Image.asset(
-                      "images/boy.jpg",
+                    child: Image.network(
+                      image!,
                       height: 70,
                       width: 70,
                       fit: BoxFit.cover,

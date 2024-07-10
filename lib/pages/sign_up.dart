@@ -39,13 +39,13 @@ class _SignUpState extends State<SignUp> {
         await SharedPreferenceHelper().saveUserEmail(emailController.text);
         await SharedPreferenceHelper().saveUserId(Id);
         await SharedPreferenceHelper().saveUserName(nameController.text);
-        await SharedPreferenceHelper().saveUserImage("Testimage");
+        await SharedPreferenceHelper().saveUserImage("https://firebasestorage.googleapis.com/v0/b/ecom-flutter-78d60.appspot.com/o/blogImage%2FIMG-20240710-WA0002.jpg?alt=media&token=644d3864-f826-4499-976b-a0f466545a35");
 
         Map<String, dynamic> userInfoMap = {
           "Name" : nameController.text,
           "Email" : emailController.text,
           "Id" : Id,
-          "Image" : "Testimage",
+          "Image" : "https://firebasestorage.googleapis.com/v0/b/ecom-flutter-78d60.appspot.com/o/blogImage%2FIMG-20240710-WA0002.jpg?alt=media&token=644d3864-f826-4499-976b-a0f466545a35",
         };
 
         await DatabaseMethods().addUserDetails(userInfoMap, Id);
