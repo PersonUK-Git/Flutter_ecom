@@ -4,7 +4,6 @@ import 'package:ecom/services/shared_pref.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class Login extends StatefulWidget {
@@ -46,43 +45,15 @@ class _LoginState extends State<Login> {
         );
         FirebaseAuth.instance.signOut();
       } else {
-        // Fetch user details from Firestore using the email address
-        QuerySnapshot userQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .where('Email', isEqualTo: emailController.text)
-            .get();
+        await SharedPreferenceHelper().saveUserEmail(emailController.text);
+        await SharedPreferenceHelper().saveUserId(user?.uid ?? '');
+        await SharedPreferenceHelper().saveUserName(user?.displayName ?? '');
+        await SharedPreferenceHelper().saveUserImage(user?.photoURL ?? '');
 
-        if (userQuery.docs.isNotEmpty) {
-          DocumentSnapshot userDoc = userQuery.docs.first;
-
-          // Save user details in SharedPreferences
-          await SharedPreferenceHelper().saveUserId(userDoc.get('Id'));
-          await SharedPreferenceHelper().saveUserName(userDoc.get('Name'));
-          await SharedPreferenceHelper().saveUserEmail(userDoc.get('Email'));
-          await SharedPreferenceHelper().saveUserImage(userDoc.get('Image'));
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.green,
-              content: Text(
-                "Logged in Successfully",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          );
-
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Bottomnav()));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.redAccent,
-              content: Text(
-                "User data not found.",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          );
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Bottomnav()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

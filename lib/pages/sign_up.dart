@@ -23,9 +23,9 @@ class _SignUpState extends State<SignUp> {
   String? name, email, password;
   File? _image;
   final picker = ImagePicker();
-  TextEditingController nameController = new TextEditingController();
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
 
@@ -61,15 +61,44 @@ class _SignUpState extends State<SignUp> {
           password: password!,
         );
 
+        User user = FirebaseAuth.instance.currentUser!;
+        await user.sendEmailVerification();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.green,
             content: Text(
-              "Registered Successfully",
+              "Verification email sent. Please check your email.",
               style: TextStyle(fontSize: 20),
             ),
           ),
         );
+
+        setState(() {
+          isLoading = false;
+        });
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Email Verification"),
+            content: Text(
+              "A verification email has been sent to your email address. Please verify your email before logging in.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Login()),
+                  );
+                },
+                child: Text("OK"),
+              ),
+            ],
+          ),
+        );
+
         String Id = randomAlphaNumeric(10);
 
         String imageUrl;
@@ -93,8 +122,7 @@ class _SignUpState extends State<SignUp> {
         };
 
         await DatabaseMethods().addUserDetails(userInfoMap, Id);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Bottomnav()));
-      } on FirebaseException catch (e) {
+      } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
