@@ -5,12 +5,16 @@ import 'package:ecom/pages/login.dart';
 import 'package:ecom/pages/onboarding.dart';
 import 'package:ecom/pages/product_detail.dart';
 import 'package:ecom/pages/sign_up.dart';
+import 'package:ecom/services/constant.dart';
 import 'package:ecom/services/shared_pref.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 void main() async {
+  
   WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey = publishablekey;
   await Firebase.initializeApp();
   runApp(const MyApp());
 }

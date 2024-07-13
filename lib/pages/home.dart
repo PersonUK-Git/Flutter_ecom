@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
   ];
 
   List categoryName = [
-    'Watch', 'Laptop', 'TV', 'Headphones', 'test',
+    'Headphones', 'Laptop', 'Watch', 'TV', 'test',
   ];
 
   String? name, image;

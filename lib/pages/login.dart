@@ -1,3 +1,4 @@
+import 'package:ecom/Admin/admin_login.dart';
 import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/sign_up.dart';
 import 'package:ecom/services/shared_pref.dart';
@@ -162,7 +163,7 @@ class _LoginState extends State<Login> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 60),
                   Text(
                     "Email",
                     style: AppStyle.boldTextFieldStyle().copyWith(color: Colors.white),
@@ -276,6 +277,23 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
+
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminLogin()));
+                      },
+                      child: Text(
+                        "Are you a Admin? Admin Sign Up",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
                 ],
               ),
             ),
