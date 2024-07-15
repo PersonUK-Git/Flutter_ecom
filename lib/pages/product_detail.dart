@@ -1,11 +1,11 @@
-import 'dart:convert';
-import 'package:ecom/pages/billing.dart';
-import 'package:ecom/services/constant.dart';
+import 'package:ecom/pages/bottomnav.dart';
+import 'package:ecom/pages/home.dart';
+import 'package:ecom/services/database.dart';
+import 'package:ecom/services/shared_pref.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:ecom/widget/support_widget.dart';
-import 'package:http/http.dart' as http;
 
 class ProductDetail extends StatefulWidget {
   final String image, name, price, detail;
@@ -24,13 +24,14 @@ class ProductDetail extends StatefulWidget {
 
 class _ProductDetailState extends State<ProductDetail> {
   late Future<void> _imageLoader;
-  Map<String, dynamic>? paymentIntent;
+  late Future<void> _sharedPrefLoader;
 
-  @override
-  void initState() {
-    super.initState();
-    _imageLoader = _loadImage();
-    Stripe.publishableKey = publishablekey; // Set your Stripe publishable key here
+  String? Name, Mail, userImage;
+
+  Future<void> getTheSharedPref() async {
+    Name = await SharedPreferenceHelper().getUserName();
+    Mail = await SharedPreferenceHelper().getUserEmail();
+    userImage = await SharedPreferenceHelper().getUserImage();
   }
 
   Future<void> _loadImage() async {
@@ -39,11 +40,32 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _imageLoader = _loadImage();
+    _sharedPrefLoader = getTheSharedPref();
+  }
+
+  // Function to show PaymentPage as a bottom sheet
+  void showPaymentPage(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PaymentSheet(
+        price: widget.price,
+        name: widget.name,
+        productImage: widget.image, // Pass the product image here
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFfef5f1),
       body: FutureBuilder<void>(
-        future: _imageLoader,
+        future: Future.wait([_imageLoader, _sharedPrefLoader]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -105,7 +127,10 @@ class _ProductDetailState extends State<ProductDetail> {
                             children: [
                               Text(
                                 widget.name,
-                                style: AppStyle.boldTextFieldStyle(),
+                                style: TextStyle(
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Text(
                                 "\$${widget.price}",
@@ -120,7 +145,10 @@ class _ProductDetailState extends State<ProductDetail> {
                           const SizedBox(height: 20),
                           Text(
                             "Description",
-                            style: AppStyle.semiBoldTextFieldStyle(),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -134,15 +162,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           Spacer(),
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PaymentPage(
-                                    price: widget.price,
-                                    name: widget.name,
-                                  ),
-                                ),
-                              );
+                              showPaymentPage(context);
                             },
                             child: Container(
                               padding: EdgeInsets.symmetric(vertical: 15),
@@ -176,111 +196,223 @@ class _ProductDetailState extends State<ProductDetail> {
       ),
     );
   }
+}
 
-  // Future<void> makePayment(String amount) async {
-  //   try {
-  //     paymentIntent = await createPaymentIntent(amount, "INR");
-  //     await Stripe.instance.initPaymentSheet(
-  //       paymentSheetParameters: SetupPaymentSheetParameters(
-  //         paymentIntentClientSecret: paymentIntent?['client_secret'],
-  //         style: ThemeMode.dark,
-  //         merchantDisplayName: "Prateek",
-  //       ),
-  //     ).then((value){});
-  //     displayPaymentSheet();
-  //   } catch (e, s) {
-  //     print('Exception: $e $s');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Payment Initialization Failed: $e'),
-  //       ),
-  //     );
-  //   }
-  // }
+class PaymentSheet extends StatelessWidget {
+  final String price;
+  final String name;
+  final String productImage;
 
-  //  displayPaymentSheet() async {
-  //   try {
-  //     await Stripe.instance.presentPaymentSheet().then((value) {
-  //       showDialog(
-  //         context: context,
-  //         builder: (_) => AlertDialog(
-  //           content: Column(
-  //             mainAxisSize: MainAxisSize.min,
-  //             children: [
-  //               Row(
-  //                 children: [
-  //                   Icon(Icons.check_circle, color: Colors.green),
-  //                   Text("Payment Successful"),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //       paymentIntent = null;
-  //     }).onError((error, stackTrace) {
-  //       print("Error is:--->$error $stackTrace");
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Error presenting payment sheet: $error'),
-  //         ),
-  //       );
-  //     });
-  //   } on StripeException catch (e) {
-  //     print("Error is:---> $e");
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Payment Cancelled: $e'),
-  //       ),
-  //     );
-  //   } catch (e) {
-  //     print('$e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Error: $e'),
-  //       ),
-  //     );
-  //   }
-  // }
+  const PaymentSheet({Key? key, required this.price, required this.name, required this.productImage}) : super(key: key);
 
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.9,
+      maxChildSize: 0.9,
+      minChildSize: 0.5,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFFececf8),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 6,
+                margin: EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              Expanded(
+                child: PaymentPage(price: price, name: name, productImage: productImage), // Pass the product image here
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
-  // createPaymentIntent(String amount, String currency) async {
-  //   try {
-  //     Map<String, dynamic> body = {
-  //       'amount': calculateAmount(amount),
-  //       'currency': currency,
-  //       'payment_method_types[]': 'card', // Corrected this line
-  //     };
+class PaymentPage extends StatefulWidget {
+  final String price;
+  final String name;
+  final String productImage;
 
-  //     var response = await http.post(
-  //       Uri.parse('https://api.stripe.com/v1/payment_intents'),
-  //       headers: {
-  //         'Authorization': 'Bearer $secretkey',
-  //         'Content-Type': 'application/x-www-form-urlencoded',
-  //       },
-  //       body: body,
-  //     );
+  const PaymentPage({super.key, required this.price, required this.name, required this.productImage});
 
-  //     if (response.statusCode == 200) {
-  //       print("Payment Intent Created: ${response.body}");
-  //       return jsonDecode(response.body);
-  //     } else {
-  //       print("Failed to create Payment Intent: ${response.body}");
-  //       throw Exception("Failed to create Payment Intent");
-  //     }
-  //   } catch (e) {
-  //     print('Error charging user: ${e.toString()}');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Error charging user: ${e.toString()}'),
-  //       ),
-  //     );
-  //     return null;
-  //   }
-  // }
+  @override
+  State<PaymentPage> createState() => _PaymentPageState();
+}
 
-  // calculateAmount(String amount) {
-  //   final calculatedAmount = ((int.parse(amount)) * 100).toString();
-  //   return calculatedAmount;
-  // }
+class _PaymentPageState extends State<PaymentPage> {
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  String cardNumber = "";
+  String expiryDate = "";
+  String cardHolderName = "";
+  String cvvCode = "";
+  bool isCvvFocused = false;
+
+  bool showBackView = false;
+  String? Name, Mail, userImage;
+
+  @override
+  void initState() {
+    super.initState();
+    getTheSharedPref();
+  }
+
+  Future<void> getTheSharedPref() async {
+    Name = await SharedPreferenceHelper().getUserName();
+    Mail = await SharedPreferenceHelper().getUserEmail();
+    userImage = await SharedPreferenceHelper().getUserImage();
+    setState(() {});
+  }
+
+  // Function to show loading screen
+  void showLoadingScreen() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) => Center(
+        child: LoadingAnimationWidget.staggeredDotsWave(
+          color: Colors.orange,
+          size: 100,
+        ),
+      ),
+    );
+
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.pop(context); // Dismiss the loading screen
+      showSuccessDialog(); // Show success dialog
+    });
+  }
+
+  // Function to show success dialog
+  void showSuccessDialog() async{
+    Map<String, dynamic> orderInfoMap = {
+      "Product": widget.name,
+      "Price": widget.price,
+      "Name": Name,
+      "Email": Mail,
+      "Image": userImage,
+      "ProductImage": widget.productImage // Include the product image
+    };
+
+    await DatabaseMethods().orderDetails(orderInfoMap);
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 10),
+                Text("Payment Successful"),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Future.delayed(Duration(seconds: 5), () {
+      Navigator.pop(context); // Dismiss the success dialog
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Bottomnav())); // Go back to the previous screen
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFFececf8),
+      appBar: AppBar(
+        title: const Text("Checkout"),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Color(0xFFececf8),
+      ),
+      body: 
+         Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.arrow_back_ios_new_outlined),
+                      SizedBox(width: 5),
+                      Text("Back"),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Credit card
+            CreditCardWidget(
+              cardNumber: cardNumber,
+              expiryDate: expiryDate,
+              cardHolderName: cardHolderName,
+              cvvCode: cvvCode,
+              showBackView: isCvvFocused,
+              onCreditCardWidgetChange: (p0) {},
+            ),
+            // Credit card form
+            CreditCardForm(
+              cardNumber: cardNumber,
+              expiryDate: expiryDate,
+              cardHolderName: cardHolderName,
+              cvvCode: cvvCode,
+              onCreditCardModelChange: (data) {
+                setState(() {
+                  cardNumber = data.cardNumber;
+                  expiryDate = data.expiryDate;
+                  cardHolderName = data.cardHolderName;
+                  cvvCode = data.cvvCode;
+                });
+              },
+              formKey: formKey,
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: showLoadingScreen, // Call showLoadingScreen on tap
+              child: Container(
+                padding: EdgeInsets.all(25),
+                margin: const EdgeInsets.symmetric(horizontal: 25),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    "Pay Now ₹${widget.price}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+          ],
+        ),
+      );
+    
+  }
 }

@@ -14,4 +14,12 @@ class DatabaseMethods{
     return await FirebaseFirestore.instance.collection(category).snapshots();
     
   } 
+
+  Future orderDetails(Map<String, dynamic> orderInfoMap) async{
+    return await FirebaseFirestore.instance.collection("Orders").add(orderInfoMap);
+  }
+  Future<Stream<QuerySnapshot>> getOrders(String email) async{
+    return await FirebaseFirestore.instance.collection("Orders").where("Email", isEqualTo: email).snapshots();
+
+  } 
 }
