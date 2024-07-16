@@ -1,5 +1,6 @@
 import 'package:ecom/Admin/add_product.dart';
 import 'package:ecom/Admin/admin_login.dart';
+import 'package:ecom/Admin/all_orders.dart';
 import 'package:ecom/pages/bottomnav.dart';
 import 'package:ecom/pages/login.dart';
 import 'package:ecom/pages/onboarding.dart';

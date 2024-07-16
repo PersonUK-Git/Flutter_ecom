@@ -10,8 +10,16 @@ class DatabaseMethods{
     return await FirebaseFirestore.instance.collection(categoryName).add(userInfoMap);
   }
 
+  Future updateStatus(String id) async{
+    return await FirebaseFirestore.instance.collection("Orders").doc(id).update({"Status": "Delivered"});
+  }
   Future<Stream<QuerySnapshot>> getProducts(String category) async{
     return await FirebaseFirestore.instance.collection(category).snapshots();
+    
+  } 
+
+  Future<Stream<QuerySnapshot>> allOrders() async{
+  return await FirebaseFirestore.instance.collection("Orders").where("Status", isEqualTo: "On the way").snapshots();
     
   } 
 

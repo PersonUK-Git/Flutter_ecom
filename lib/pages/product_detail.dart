@@ -302,7 +302,8 @@ class _PaymentPageState extends State<PaymentPage> {
       "Name": Name,
       "Email": Mail,
       "Image": userImage,
-      "ProductImage": widget.productImage // Include the product image
+      "ProductImage": widget.productImage, // Include the product image
+      "Status" : "On the Way",
     };
 
     await DatabaseMethods().orderDetails(orderInfoMap);

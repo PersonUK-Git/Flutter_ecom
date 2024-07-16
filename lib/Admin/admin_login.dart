@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecom/Admin/add_product.dart';
-import 'package:ecom/Admin/home_admin.dart';
+import 'package:ecom/Admin/admin_home_page.dart';
 import 'package:ecom/pages/animated_text.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
+
 class AdminLogin extends StatefulWidget {
   const AdminLogin({super.key});
 
@@ -15,12 +16,24 @@ class AdminLogin extends StatefulWidget {
 }
 
 class _AdminLoginState extends State<AdminLogin> {
-
   TextEditingController userNameController = new TextEditingController();
   TextEditingController userPasswordController = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_outlined),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Container(
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
@@ -34,7 +47,6 @@ class _AdminLoginState extends State<AdminLogin> {
           margin: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
           child: SingleChildScrollView(
             child: Form(
-              
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -125,7 +137,7 @@ class _AdminLoginState extends State<AdminLogin> {
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                       loginAdmin();
+                        loginAdmin();
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16),
@@ -154,23 +166,32 @@ class _AdminLoginState extends State<AdminLogin> {
     );
   }
 
-  loginAdmin(){
-    FirebaseFirestore.instance.collection("Admin").get().then((snapshot){
-      snapshot.docs.forEach((result){
-        if(result.data()['username'] != userNameController.text.trim()){
+  void loginAdmin() {
+    FirebaseFirestore.instance.collection("Admin").get().then((snapshot) {
+      snapshot.docs.forEach((result) {
+        if (result.data()['username'] != userNameController.text.trim()) {
           ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.redAccent, content: Text("Your Id is not correct", style: TextStyle(fontSize: 20),), ),
-        );
-
-        } else if(result.data()['Password'] != userPasswordController.text.trim()){
+            SnackBar(
+              backgroundColor: Colors.redAccent,
+              content: Text(
+                "Your Id is not correct",
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          );
+        } else if (result.data()['Password'] != userPasswordController.text.trim()) {
           ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.redAccent, content: Text("Your Password is not correct", style: TextStyle(fontSize: 20),), ),
-        );
-        }
-
-        else {
-          // to be changed later on 
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddProduct()));
+            SnackBar(
+              backgroundColor: Colors.redAccent,
+              content: Text(
+                "Your Password is not correct",
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          );
+        } else {
+          // to be changed later on
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AdminHomePage()));
         }
       });
     });
