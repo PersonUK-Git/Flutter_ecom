@@ -79,14 +79,19 @@ class _AddProductState extends State<AddProduct> {
 
         final UploadTask task = firebaseStorageRef.putFile(selectedImage!);
         var downloadURL = await (await task).ref.getDownloadURL();
+
+        String firstLetter = nameController.text.substring(0,1).toUpperCase();
         Map<String, dynamic> addProduct = {
           "Name": nameController.text,
           "Image": downloadURL,
+          "SearchKey" : firstLetter,
+          "UpdatedName" : nameController.text.toUpperCase(),
           "Price": priceController.text,
           "Description": detailController.text
         };
 
-        await DatabaseMethods().addProduct(addProduct, value!).then((value) {
+        await DatabaseMethods().addProduct(addProduct, value!).then((value) async{
+          await DatabaseMethods().addAllProducts(addProduct);
           setState(() {
             selectedImage = null;
             priceController.text = "";

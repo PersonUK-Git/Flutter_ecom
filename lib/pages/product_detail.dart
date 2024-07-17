@@ -109,82 +109,84 @@ class _ProductDetailState extends State<ProductDetail> {
                     ],
                   ),
                   Expanded(
-                    child: Container(
-                      padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
+                    child: SingleChildScrollView(
+                      child: Container(
+                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
                         ),
-                      ),
-                      width: MediaQuery.of(context).size.width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                widget.name,
-                                style: TextStyle(
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                "\$${widget.price}",
-                                style: TextStyle(
-                                  color: Color(0xFFfd6f3e),
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "Description",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            widget.detail,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 90),
-                          Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              showPaymentPage(context);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 15),
-                              decoration: BoxDecoration(
-                                color: Color(0xFFfd6f3e),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              width: MediaQuery.of(context).size.width,
-                              child: Center(
-                                child: Text(
-                                  "Buy Now",
+                        width: MediaQuery.of(context).size.width,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  widget.name,
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 23,
                                     fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "\$${widget.price}",
+                                  style: TextStyle(
+                                    color: Color(0xFFfd6f3e),
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              "Description",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              widget.detail,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 90),
+                            
+                            GestureDetector(
+                              onTap: () {
+                                showPaymentPage(context);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFfd6f3e),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                width: MediaQuery.of(context).size.width,
+                                child: Center(
+                                  child: Text(
+                                    "Buy Now",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
+                            const SizedBox(height: 20),
+                          ],
+                        ),
                       ),
                     ),
                   ),

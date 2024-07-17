@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecom/pages/category_products.dart';
+import 'package:ecom/pages/product_detail.dart';
+import 'package:ecom/services/database.dart';
 import 'package:ecom/services/shared_pref.dart';
 import 'package:ecom/widget/support_widget.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  bool search = false;
   List categories = [
     "images/headphone_icon.png",
     "images/laptop.png",
@@ -20,8 +24,47 @@ class _HomeState extends State<Home> {
   ];
 
   List categoryName = [
-    'Headphones', 'Laptop', 'Watch', 'TV', 'test',
+    'Headphones',
+    'Laptop',
+    'Watch',
+    'TV',
+    'test',
   ];
+
+  var queryRequestSet = [];
+  var tempSearchStore = [];
+  TextEditingController searchController = TextEditingController();
+
+  initiateSearch(value) {
+    if (value.length == 0) {
+      setState(() {
+        queryRequestSet = [];
+        tempSearchStore = [];
+      });
+    }
+    setState(() {
+      search = true;
+    });
+
+    var capitalizedValue =
+        value.substring(0, 1).toUpperCase() + value.substring(1);
+    if (queryRequestSet.length == 0 && value.length == 1) {
+      DatabaseMethods().search(value).then((QuerySnapshot docs) {
+        for (int i = 0; i < docs.docs.length; i++) {
+          queryRequestSet.add(docs.docs[i].data());
+        }
+      });
+    } else {
+      tempSearchStore = [];
+      queryRequestSet.forEach((element) {
+        if (element['UpdatedName'].startsWith(capitalizedValue)) {
+          setState(() {
+            tempSearchStore.add(element);
+          });
+        }
+      });
+    }
+  }
 
   String? name, image;
   bool isLoading = true;
@@ -100,294 +143,391 @@ class _HomeState extends State<Home> {
                       ),
                       width: MediaQuery.of(context).size.width,
                       child: TextField(
+                        controller: searchController,
+                        onChanged: (value) {
+                          initiateSearch(value.toUpperCase());
+                        },
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "Search Products",
                           hintStyle: AppStyle.lightTextFieldStyle(),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.black,
-                          ),
+                          prefixIcon: search
+                              ? GestureDetector(onTap: (){
+                                search = false;
+                                tempSearchStore = [];
+                                queryRequestSet = [];
+                                searchController.text = "";
+                                setState(() {});
+                              } ,child: Icon(Icons.close))
+                              : Icon(
+                                  Icons.search,
+                                  color: Colors.black,
+                                ),
                         ),
                       ),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Categories",
-                          style: AppStyle.semiBoldTextFieldStyle(),
-                        ),
-                        Text(
-                          "See all",
-                          style: TextStyle(
-                            color: Color(0xFFfd6f3e),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(right: 20),
-                          padding: EdgeInsets.all(20),
-                          height: 130,
-                          decoration: BoxDecoration(
-                              color: Color(0xFFfd6f3e),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Center(
-                            child: Text(
-                              "All",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.zero,
-                            height: 130,
-                            child: ListView.builder(
-                                itemCount: categories.length,
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return CategoryTile(
-                                    image: categories[index],
-                                    name: categoryName[index],
-                                  );
-                                }),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "All Products",
-                          style: AppStyle.semiBoldTextFieldStyle(),
-                        ),
-                        Text(
-                          "See all",
-                          style: TextStyle(
-                            color: Color(0xFFfd6f3e),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Container(
-                      height: 240,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListView(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: 200, // Set a fixed width for uniform spacing
-                              padding: EdgeInsets.symmetric(horizontal: 20.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
+                    search
+                        ? ListView(
+                            padding: EdgeInsets.only(left: 10, right: 10),
+                            primary: false,
+                            shrinkWrap: true,
+                            children: tempSearchStore.map((element) {
+                              return buildResultCard(element);
+                            }).toList())
+                        : Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Image.asset(
-                                    "images/headphone2.png",
-                                    height: 150,
-                                    width: 150,
-                                    fit: BoxFit.cover,
-                                  ),
                                   Text(
-                                    "Headphone",
+                                    "Categories",
                                     style: AppStyle.semiBoldTextFieldStyle(),
                                   ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("\$100",
-                                          style: TextStyle(
-                                            color: Color(0xFFfd6f3e),
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                      Container(
-                                        padding: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFfd6f3e),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          Icons.add,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: 200, // Set a fixed width for uniform spacing
-                              padding: EdgeInsets.symmetric(horizontal: 20.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Image.asset(
-                                    "images/watch2.png",
-                                    height: 150,
-                                    width: 150,
-                                    fit: BoxFit.cover,
-                                  ),
                                   Text(
-                                    "Smart Watch",
+                                    "See all",
+                                    style: TextStyle(
+                                      color: Color(0xFFfd6f3e),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(right: 20),
+                                    padding: EdgeInsets.all(20),
+                                    height: 130,
+                                    decoration: BoxDecoration(
+                                        color: Color(0xFFfd6f3e),
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: Center(
+                                      child: Text(
+                                        "All",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      padding: EdgeInsets.zero,
+                                      height: 130,
+                                      child: ListView.builder(
+                                          itemCount: categories.length,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.horizontal,
+                                          itemBuilder: (context, index) {
+                                            return CategoryTile(
+                                              image: categories[index],
+                                              name: categoryName[index],
+                                            );
+                                          }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "All Products",
                                     style: AppStyle.semiBoldTextFieldStyle(),
                                   ),
-                                  const SizedBox(
-                                    height: 10,
+                                  Text(
+                                    "See all",
+                                    style: TextStyle(
+                                      color: Color(0xFFfd6f3e),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("\$300",
-                                          style: TextStyle(
-                                            color: Color(0xFFfd6f3e),
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                      Container(
-                                        padding: EdgeInsets.all(5),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 30,
+                              ),
+                              Container(
+                                height: 240,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.horizontal,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        width:
+                                            200, // Set a fixed width for uniform spacing
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFFfd6f3e),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          Icons.add,
                                           color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 5,
+                                              offset: Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              "images/headphone2.png",
+                                              height: 150,
+                                              width: 150,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            Text(
+                                              "Headphone",
+                                              style: AppStyle
+                                                  .semiBoldTextFieldStyle(),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text("\$100",
+                                                    style: TextStyle(
+                                                      color: Color(0xFFfd6f3e),
+                                                      fontSize: 22,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    )),
+                                                Container(
+                                                  padding: EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFfd6f3e),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                              ],
+                                            )
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: 200, // Set a fixed width for uniform spacing
-                              padding: EdgeInsets.symmetric(horizontal: 20.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Image.asset(
-                                    "images/laptop2.png",
-                                    height: 150,
-                                    width: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  Text(
-                                    "Laptop",
-                                    style: AppStyle.semiBoldTextFieldStyle(),
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("\$1000",
-                                          style: TextStyle(
-                                            color: Color(0xFFfd6f3e),
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                      Container(
-                                        padding: EdgeInsets.all(5),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        width:
+                                            200, // Set a fixed width for uniform spacing
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFFfd6f3e),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          Icons.add,
                                           color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 5,
+                                              offset: Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              "images/watch2.png",
+                                              height: 150,
+                                              width: 150,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            Text(
+                                              "Smart Watch",
+                                              style: AppStyle
+                                                  .semiBoldTextFieldStyle(),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text("\$300",
+                                                    style: TextStyle(
+                                                      color: Color(0xFFfd6f3e),
+                                                      fontSize: 22,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    )),
+                                                Container(
+                                                  padding: EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFfd6f3e),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        width:
+                                            200, // Set a fixed width for uniform spacing
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 20.0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  Colors.grey.withOpacity(0.5),
+                                              spreadRadius: 2,
+                                              blurRadius: 5,
+                                              offset: Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              "images/laptop2.png",
+                                              height: 150,
+                                              width: 150,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            Text(
+                                              "Laptop",
+                                              style: AppStyle
+                                                  .semiBoldTextFieldStyle(),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text("\$1000",
+                                                    style: TextStyle(
+                                                      color: Color(0xFFfd6f3e),
+                                                      fontSize: 22,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    )),
+                                                Container(
+                                                  padding: EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFfd6f3e),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
                           ),
-                        ],
-                      ),
-                    )
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget buildResultCard(data) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ProductDetail(
+                    image: data["Image"],
+                    name: data["Name"],
+                    price: data["Price"],
+                    detail: data["Description"])));
+      },
+      child: Container(
+        padding: EdgeInsets.only(left: 20),
+        width: MediaQuery.of(context).size.width,
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  data['Image'],
+                  height: 70,
+                  width: 70,
+                  fit: BoxFit.cover,
+                )),
+            SizedBox(
+              width: 20,
+            ),
+            Text(
+              data["Name"],
+              style: AppStyle.semiBoldTextFieldStyle(),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
