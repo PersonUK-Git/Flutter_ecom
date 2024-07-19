@@ -1,4 +1,5 @@
 import 'package:ecom/pages/home.dart';
+import 'package:ecom/pages/sign_up.dart';
 import 'package:flutter/material.dart';
 
 class Onboarding extends StatefulWidget {
@@ -37,20 +38,25 @@ class _OnboardingState extends State<Onboarding> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   
-                  children:[ Container(
-                    margin: EdgeInsets.only(right: 20),
-                    padding: EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black,
+                  children:[ GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp()));
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 20),
+                      padding: EdgeInsets.all(30),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black,
+                      ),
+                      child: Text("Next",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),),
+                      
                     ),
-                    child: Text("Next",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),),
-                    
                   ),
                   
                   ]

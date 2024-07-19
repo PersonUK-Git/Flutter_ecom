@@ -54,7 +54,12 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: _isSignedIn ? Bottomnav() : SignUp(),
+      home: _isSignedIn ? Bottomnav() : Onboarding(),
+      initialRoute: '/',
+      routes: {
+       // Your initial screen
+        '/login': (context) => Login(), // Define the login route
+      },
     );
   }
 }

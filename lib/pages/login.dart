@@ -28,8 +28,8 @@ class _LoginState extends State<Login> {
 
     try {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
       User? user = FirebaseAuth.instance.currentUser;
@@ -50,7 +50,7 @@ class _LoginState extends State<Login> {
         // Fetch user details from Firestore using the email address
         QuerySnapshot userQuery = await FirebaseFirestore.instance
             .collection('users')
-            .where('Email', isEqualTo: emailController.text)
+            .where('Email', isEqualTo: emailController.text.trim())
             .get();
 
         if (userQuery.docs.isNotEmpty) {
