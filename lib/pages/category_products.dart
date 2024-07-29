@@ -60,62 +60,76 @@ class _CategoryProductsState extends State<CategoryProducts> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Image.network(
-                      ds["Image"],
-                      height: 150,
-                      width: 150,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.blue,
-                            value: progress.expectedTotalBytes != null
-                                ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes ?? 1)
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      ds['Name'],
-                      style: AppStyle.semiBoldTextFieldStyle(),
-                    ),
-                    Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "\$" + ds["Price"],
-                          style: TextStyle(
-                            color: Color(0xFFfd6f3e),
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>ProductDetail(image: ds["Image"], name: ds["Name"], price: ds["Price"], detail: ds["Description"],)));
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
+                child: Expanded(
+                  child: Column(
+
+                    mainAxisSize: MainAxisSize.min, // Ensure the container size is based on its content
+                    children: [
+                      SizedBox(height: 20),
+                      Image.network(
+                        ds["Image"],
+                        height: 140,
+                        width: 140,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.blue,
+                              value: progress.expectedTotalBytes != null
+                                  ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        ds['Name'],
+                        style: AppStyle.semiBoldTextFieldStyle(),
+                      ),
+                      SizedBox(height: 5,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "\$" + ds["Price"],
+                            style: TextStyle(
                               color: Color(0xFFfd6f3e),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        )
-                      ],
-                    )
-                  ],
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetail(
+                                    image: ds["Image"],
+                                    name: ds["Name"],
+                                    price: ds["Price"],
+                                    detail: ds["Description"],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFfd6f3e),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.add,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -130,6 +144,8 @@ class _CategoryProductsState extends State<CategoryProducts> {
     return Scaffold(
       backgroundColor: Color(0xfff2f2f2),
       appBar: AppBar(
+        title: Text(widget.category, style: AppStyle.semiBoldTextFieldStyle(),),
+        centerTitle: true,
         backgroundColor: Color(0xfff2f2f2),
         leading: GestureDetector(
           onTap: () {
@@ -139,7 +155,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
         ),
       ),
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20),
+        margin: EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
             Expanded(child: allProducts()),

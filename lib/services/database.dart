@@ -22,7 +22,7 @@ class DatabaseMethods{
   } 
 
   Future<Stream<QuerySnapshot>> allOrders() async{
-  return await FirebaseFirestore.instance.collection("Orders").where("Status", isEqualTo: "On the way").snapshots();
+  return await FirebaseFirestore.instance.collection("Orders").where("Status", isEqualTo: "Payment Completed").snapshots();
     
   } 
 

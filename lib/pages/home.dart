@@ -28,7 +28,6 @@ class _HomeState extends State<Home> {
     'Laptop',
     'Watch',
     'TV',
-    'test',
   ];
 
   var queryRequestSet = [];
@@ -84,9 +83,21 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     onTheLoad();
     super.initState();
+  }
+
+  Future<List<DocumentSnapshot>> fetchAllProducts() async {
+    List<String> collections = ['Headphones', 'Laptops', 'Watches', 'TV'];
+    List<DocumentSnapshot> allProducts = [];
+
+    for (String collection in collections) {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection(collection).get();
+      allProducts.addAll(snapshot.docs);
+    }
+
+    return allProducts;
   }
 
   @override
@@ -152,13 +163,16 @@ class _HomeState extends State<Home> {
                           hintText: "Search Products",
                           hintStyle: AppStyle.lightTextFieldStyle(),
                           prefixIcon: search
-                              ? GestureDetector(onTap: (){
-                                search = false;
-                                tempSearchStore = [];
-                                queryRequestSet = [];
-                                searchController.text = "";
-                                setState(() {});
-                              } ,child: Icon(Icons.close))
+                              ? GestureDetector(
+                                  onTap: () {
+                                    search = false;
+                                    tempSearchStore = [];
+                                    queryRequestSet = [];
+                                    searchController.text = "";
+                                    setState(() {});
+                                  },
+                                  child: Icon(Icons.close),
+                                )
                               : Icon(
                                   Icons.search,
                                   color: Colors.black,
@@ -268,215 +282,105 @@ class _HomeState extends State<Home> {
                                   color: Colors.transparent,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: ListView(
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.horizontal,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        width:
-                                            200, // Set a fixed width for uniform spacing
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 20.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Image.asset(
-                                              "images/headphone2.png",
-                                              height: 150,
-                                              width: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            Text(
-                                              "Headphone",
-                                              style: AppStyle
-                                                  .semiBoldTextFieldStyle(),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text("\$100",
-                                                    style: TextStyle(
-                                                      color: Color(0xFFfd6f3e),
-                                                      fontSize: 22,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                Container(
-                                                  padding: EdgeInsets.all(5),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFfd6f3e),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
+                                child: FutureBuilder<List<DocumentSnapshot>>(
+                                  future: fetchAllProducts(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    var products = snapshot.data!;
+
+                                    return ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: products.length,
+                                      itemBuilder: (context, index) {
+                                        var product = products[index].data()
+                                            as Map<String, dynamic>;
+
+                                        return GestureDetector(
+                                          onTap: (){
+                                            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetail(image: product['Image'], name: product['Name'], price: product['Price'], detail: product['Description']),));
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Container(
+                                              width: 200,
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 20.0),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.5),
+                                                    spreadRadius: 2,
+                                                    blurRadius: 5,
+                                                    offset: Offset(0, 3),
                                                   ),
-                                                  child: Icon(
-                                                    Icons.add,
-                                                    color: Colors.white,
+                                                ],
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  Image.network(
+                                                    product['Image'],
+                                                    height: 150,
+                                                    width: 150,
+                                                    fit: BoxFit.cover,
                                                   ),
-                                                )
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        width:
-                                            200, // Set a fixed width for uniform spacing
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 20.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Image.asset(
-                                              "images/watch2.png",
-                                              height: 150,
-                                              width: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            Text(
-                                              "Smart Watch",
-                                              style: AppStyle
-                                                  .semiBoldTextFieldStyle(),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text("\$300",
-                                                    style: TextStyle(
-                                                      color: Color(0xFFfd6f3e),
-                                                      fontSize: 22,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                Container(
-                                                  padding: EdgeInsets.all(5),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFfd6f3e),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      product['Name'],
+                                                      style: AppStyle
+                                                          .semiBoldTextFieldStyle(),
+                                                    ),
                                                   ),
-                                                  child: Icon(
-                                                    Icons.add,
-                                                    color: Colors.white,
+                                                  const SizedBox(
+                                                    height: 10,
                                                   ),
-                                                ),
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        width:
-                                            200, // Set a fixed width for uniform spacing
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 20.0),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 3),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        "\$${product['Price']}",
+                                                        style: TextStyle(
+                                                          color: Color(0xFFfd6f3e),
+                                                          fontSize: 22,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        padding:
+                                                            EdgeInsets.all(5),
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              Color(0xFFfd6f3e),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.add,
+                                                          color: Colors.white,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Image.asset(
-                                              "images/laptop2.png",
-                                              height: 150,
-                                              width: 150,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            Text(
-                                              "Laptop",
-                                              style: AppStyle
-                                                  .semiBoldTextFieldStyle(),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text("\$1000",
-                                                    style: TextStyle(
-                                                      color: Color(0xFFfd6f3e),
-                                                      fontSize: 22,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                Container(
-                                                  padding: EdgeInsets.all(5),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFfd6f3e),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.add,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
                               )
                             ],
@@ -533,7 +437,7 @@ class _HomeState extends State<Home> {
 }
 
 class CategoryTile extends StatelessWidget {
-  String image, name;
+  final String image, name;
   CategoryTile({super.key, required this.image, required this.name});
 
   @override

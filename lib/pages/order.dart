@@ -77,24 +77,27 @@ class _OrderState extends State<Order> {
                   child: Row(
                     children: [Image.network(ds["ProductImage"], height: 120, width: 120, fit: BoxFit.cover,),
                     SizedBox(width: 30,), 
-                    Column(
-                      children: [
-                        Text(ds["Product"], style: AppStyle.semiBoldTextFieldStyle(),),
-                        Text("\$"+ds["Price"].toString(),
-                        style: TextStyle(
-                          color: Color(0xFFfd6f3e),
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
-                        )),
-                      
-                        Text("Status : "+ds["Status"].toString(),
-                        style: TextStyle(
-                          color: Color(0xFFfd6f3e),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        )),
-                      ],
-                      
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(ds["Product"], style: AppStyle.semiBoldTextFieldStyle(),),
+                          Text("\$"+ds["Price"].toString(),
+                          style: TextStyle(
+                            color: Color(0xFFfd6f3e),
+                            fontSize: 23,
+                            fontWeight: FontWeight.bold,
+                          )),
+                        
+                          Text("Status : "+ds["Status"].toString(),
+                          style: TextStyle(
+                            color: Color(0xFFfd6f3e),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          )),
+                        ],
+                        
+                      ),
                     ),
                     
                     ],

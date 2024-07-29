@@ -137,7 +137,7 @@ class _AddProductState extends State<AddProduct> {
 
   String? value;
   final List<String> categoryItems = [
-    'Headphones', 'Laptop', 'Watch', 'TV', 'test',
+    'Headphones', 'Laptop', 'Watch', 'TV',
   ];
 
   @override

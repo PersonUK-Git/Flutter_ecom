@@ -1,5 +1,4 @@
 import 'package:ecom/pages/bottomnav.dart';
-import 'package:ecom/pages/home.dart';
 import 'package:ecom/services/database.dart';
 import 'package:ecom/services/shared_pref.dart';
 import 'package:flutter/material.dart';
@@ -126,11 +125,14 @@ class _ProductDetailState extends State<ProductDetail> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  widget.name,
-                                  style: TextStyle(
-                                    fontSize: 23,
-                                    fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Text(
+                                    widget.name,
+                                    style: TextStyle(
+                                      fontSize: 23,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 Text(
@@ -160,7 +162,6 @@ class _ProductDetailState extends State<ProductDetail> {
                               ),
                             ),
                             const SizedBox(height: 90),
-                            
                             GestureDetector(
                               onTap: () {
                                 showPaymentPage(context);
@@ -205,7 +206,12 @@ class PaymentSheet extends StatelessWidget {
   final String name;
   final String productImage;
 
-  const PaymentSheet({Key? key, required this.price, required this.name, required this.productImage}) : super(key: key);
+  const PaymentSheet({
+    Key? key,
+    required this.price,
+    required this.name,
+    required this.productImage,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +238,11 @@ class PaymentSheet extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: PaymentPage(price: price, name: name, productImage: productImage), // Pass the product image here
+                child: PaymentPage(
+                  price: price,
+                  name: name,
+                  productImage: productImage,
+                ), // Pass the product image here
               ),
             ],
           ),
@@ -247,7 +257,12 @@ class PaymentPage extends StatefulWidget {
   final String name;
   final String productImage;
 
-  const PaymentPage({super.key, required this.price, required this.name, required this.productImage});
+  const PaymentPage({
+    super.key,
+    required this.price,
+    required this.name,
+    required this.productImage,
+  });
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -297,7 +312,7 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   // Function to show success dialog
-  void showSuccessDialog() async{
+  void showSuccessDialog() async {
     Map<String, dynamic> orderInfoMap = {
       "Product": widget.name,
       "Price": widget.price,
@@ -305,10 +320,11 @@ class _PaymentPageState extends State<PaymentPage> {
       "Email": Mail,
       "Image": userImage,
       "ProductImage": widget.productImage, // Include the product image
-      "Status" : "On the Way",
+      "Status": "Payment Completed"
     };
 
     await DatabaseMethods().orderDetails(orderInfoMap);
+
     showDialog(
       context: context,
       barrierDismissible: false, // Prevent dismissing by tapping outside
@@ -343,8 +359,8 @@ class _PaymentPageState extends State<PaymentPage> {
         backgroundColor: Colors.transparent,
         foregroundColor: Color(0xFFececf8),
       ),
-      body: 
-         Column(
+      body: SingleChildScrollView(
+        child: Column(
           children: [
             Align(
               alignment: Alignment.centerLeft,
@@ -390,7 +406,7 @@ class _PaymentPageState extends State<PaymentPage> {
               },
               formKey: formKey,
             ),
-            const Spacer(),
+            const SizedBox(height: 25),
             GestureDetector(
               onTap: showLoadingScreen, // Call showLoadingScreen on tap
               child: Container(
@@ -402,7 +418,7 @@ class _PaymentPageState extends State<PaymentPage> {
                 ),
                 child: Center(
                   child: Text(
-                    "Pay Now ₹${widget.price}",
+                    "Pay Now \$${widget.price}",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.grey.shade700,
@@ -415,7 +431,7 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 25),
           ],
         ),
-      );
-    
+      ),
+    );
   }
 }
